@@ -44,7 +44,7 @@ export const StateIndicator: React.FC<StateIndicatorProps> = ({ state }) => {
     <>
       {/* Desktop version - centered at top */}
       <motion.div
-        className="hidden sm:block fixed top-6 left-1/2 transform -translate-x-1/2 z-50"
+        className="hidden lg:block fixed top-6 left-1/2 transform -translate-x-1/2 z-50"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, type: 'spring' }}
@@ -91,7 +91,7 @@ export const StateIndicator: React.FC<StateIndicatorProps> = ({ state }) => {
 
       {/* Mobile version - minimal indicator at top-right corner */}
       <motion.div
-        className="sm:hidden fixed top-1 right-1 z-50"
+        className="lg:hidden fixed top-1 right-1 z-50"
         initial={{ scale: 0, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         transition={{ duration: 0.3, type: 'spring' }}

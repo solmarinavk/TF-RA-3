@@ -39,12 +39,13 @@ export const KeyButton: React.FC<KeyButtonProps> = ({
   }, [fingerPosition, keyNode.radius]);
 
   // Tamaño responsive basado en viewport width
+  // < 1024 = móvil/tablet (usa UI compacta con lg: breakpoint)
   const getResponsiveSize = () => {
     const vw = window.innerWidth;
-    if (vw < 380) return 52;  // móvil pequeño (iPhone SE, etc)
-    if (vw < 640) return 58;  // móvil estándar
-    if (vw < 768) return 80;  // tablet pequeño
-    if (vw < 1024) return 90; // tablet
+    if (vw < 380) return 48;  // móvil pequeño (iPhone SE, etc)
+    if (vw < 640) return 54;  // móvil estándar
+    if (vw < 768) return 60;  // tablet pequeño / iPhone landscape
+    if (vw < 1024) return 70; // tablet / iPad
     if (vw < 1280) return 100; // laptop pequeño (14")
     return 110; // laptop grande (16"+)
   };
