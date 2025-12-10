@@ -29,7 +29,26 @@ function App() {
 
   const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
+  const [isPortraitMobile, setIsPortraitMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // Detectar si es mobile/tablet en portrait
+  useEffect(() => {
+    const checkOrientation = () => {
+      const isMobileOrTablet = window.innerWidth < 1024;
+      const isPortrait = window.innerHeight > window.innerWidth;
+      setIsPortraitMobile(isMobileOrTablet && isPortrait);
+    };
+
+    checkOrientation();
+    window.addEventListener('resize', checkOrientation);
+    window.addEventListener('orientationchange', checkOrientation);
+
+    return () => {
+      window.removeEventListener('resize', checkOrientation);
+      window.removeEventListener('orientationchange', checkOrientation);
+    };
+  }, []);
 
   // Inicializar MediaPipe
   const { poseLandmarker, handLandmarker, isLoading, error, isReady } = useMediaPipe();
@@ -96,6 +115,31 @@ function App() {
           >
             Reintentar
           </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Pantalla de "rotar dispositivo" para portrait en mobile/tablet
+  if (isPortraitMobile) {
+    return (
+      <div className="w-screen h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-8">
+        <div className="text-center">
+          <motion.div
+            className="text-7xl mb-6"
+            animate={{ rotate: [0, -90, -90, 0] }}
+            transition={{ duration: 2, repeat: Infinity, repeatDelay: 1 }}
+          >
+            📱
+          </motion.div>
+          <h2 className="text-white text-2xl font-bold mb-3">Gira tu dispositivo</h2>
+          <p className="text-slate-400 text-sm mb-6">
+            Para usar DOCommunication, coloca tu dispositivo en modo horizontal (landscape)
+          </p>
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-xs">
+            <span>🔄</span>
+            <span>Rotación automática activada</span>
+          </div>
         </div>
       </div>
     );
@@ -210,7 +254,7 @@ function App() {
         </>
       )}
 
-      {/* Panel de instrucciones - solo desktop */}
+      {/* Panel de instrucciones - desktop */}
       <div className="hidden lg:block fixed bottom-4 left-4 z-40 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3 text-white text-xs space-y-1.5 max-w-[220px] border border-slate-700/30">
         <div className="font-semibold text-slate-300 mb-2 text-sm">Controles</div>
         <div className="flex items-center gap-2">
@@ -229,6 +273,26 @@ function App() {
           {isReady ? '● Sistema listo' : '○ Preparando...'}
         </div>
       </div>
+
+      {/* Mini instrucciones mobile - solo cuando IDLE */}
+      {systemState === 'IDLE' && (
+        <div className="lg:hidden fixed bottom-2 left-2 right-2 z-40 bg-slate-900/70 backdrop-blur-sm rounded-lg px-3 py-2 text-white">
+          <div className="flex items-center justify-center gap-4 text-[10px]">
+            <span className="flex items-center gap-1">
+              <span>💪</span>
+              <span className="text-slate-400">L izq = Iniciar</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span>👆</span>
+              <span className="text-slate-400">Dedo = Elegir</span>
+            </span>
+            <span className="flex items-center gap-1">
+              <span>👍</span>
+              <span className="text-slate-400">OK = Fin</span>
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* Panel de métricas completo */}
       {systemState === 'DISPLAYING' && metrics && (
