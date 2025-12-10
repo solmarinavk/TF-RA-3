@@ -26,13 +26,13 @@ export const HOVER_THRESHOLD = 60; // pixels
 
 // Parámetros de detección de gestos - más estrictos en móvil
 export const L_POSE_ANGLE_TOLERANCE = 45; // grados (desktop: 45-135 grados)
-export const L_POSE_ANGLE_TOLERANCE_MOBILE = 25; // grados (móvil: 65-115 grados, más estricto)
+export const L_POSE_ANGLE_TOLERANCE_MOBILE = 38; // grados (móvil: 52-128 grados, ligeramente más estricto)
 
 export const L_POSE_DURATION = 2000; // 2 segundos (desktop)
-export const L_POSE_DURATION_MOBILE = 2500; // 2.5 segundos (móvil, más tiempo para evitar falsos positivos)
+export const L_POSE_DURATION_MOBILE = 2300; // 2.3 segundos (móvil, un poco más para evitar falsos positivos)
 
 export const MIN_LANDMARK_VISIBILITY = 0.3; // desktop: más permisivo
-export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.5; // móvil: más estricto, requiere mejor visibilidad
+export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.35; // móvil: ligeramente más estricto
 
 export const FPS_TARGET = 30;
 
