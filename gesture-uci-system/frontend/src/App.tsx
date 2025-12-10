@@ -29,10 +29,17 @@ function App() {
 
   const [canvasSize, setCanvasSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [videoElement, setVideoElement] = useState<HTMLVideoElement | null>(null);
-  const [isPortraitMobile, setIsPortraitMobile] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
 
-  // Detectar si es mobile/tablet en portrait
+  // Detectar si es mobile/tablet en portrait - valor inicial calculado
+  const [isPortraitMobile, setIsPortraitMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    const isMobileOrTablet = window.innerWidth < 1024;
+    const isPortrait = window.innerHeight > window.innerWidth;
+    return isMobileOrTablet && isPortrait;
+  });
+
+  // Actualizar detección de orientación
   useEffect(() => {
     const checkOrientation = () => {
       const isMobileOrTablet = window.innerWidth < 1024;
@@ -40,9 +47,14 @@ function App() {
       setIsPortraitMobile(isMobileOrTablet && isPortrait);
     };
 
+    // Verificar inmediatamente
     checkOrientation();
+
     window.addEventListener('resize', checkOrientation);
-    window.addEventListener('orientationchange', checkOrientation);
+    window.addEventListener('orientationchange', () => {
+      // Delay para permitir que el navegador actualice las dimensiones
+      setTimeout(checkOrientation, 100);
+    });
 
     return () => {
       window.removeEventListener('resize', checkOrientation);
@@ -223,25 +235,25 @@ function App() {
             </div>
           </motion.div>
 
-          {/* Mobile version - minimal bar at bottom */}
+          {/* Mobile version - bar at bottom */}
           <motion.div
-            className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/80 backdrop-blur-sm px-2 py-1 text-white"
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/90 backdrop-blur-sm px-3 py-2 text-white"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
           >
             {currentMessage.length === 0 ? (
-              <div className="text-slate-500 text-[10px] text-center">
-                👆 Apunta a un círculo
+              <div className="text-slate-400 text-xs text-center">
+                👆 Apunta a un círculo para seleccionar
               </div>
             ) : (
-              <div className="flex flex-wrap gap-1 justify-center">
+              <div className="flex flex-wrap gap-1.5 justify-center">
                 {currentMessage.map((word, i) => {
                   const keyNode = UCI_KEYS.find(k => k.label === word);
                   return (
                     <span
                       key={i}
-                      className="px-1.5 py-0.5 rounded text-[9px] font-medium text-white"
+                      className="px-2 py-1 rounded text-xs font-medium text-white"
                       style={{ backgroundColor: keyNode?.color || '#3b82f6' }}
                     >
                       {word.split(' ')[0]}
@@ -274,21 +286,21 @@ function App() {
         </div>
       </div>
 
-      {/* Mini instrucciones mobile - solo cuando IDLE */}
+      {/* Instrucciones mobile - solo cuando IDLE */}
       {systemState === 'IDLE' && (
-        <div className="lg:hidden fixed bottom-2 left-2 right-2 z-40 bg-slate-900/70 backdrop-blur-sm rounded-lg px-3 py-2 text-white">
-          <div className="flex items-center justify-center gap-4 text-[10px]">
-            <span className="flex items-center gap-1">
-              <span>💪</span>
-              <span className="text-slate-400">L izq = Iniciar</span>
+        <div className="lg:hidden fixed bottom-2 left-2 right-2 z-40 bg-slate-900/80 backdrop-blur-sm rounded-lg px-4 py-3 text-white">
+          <div className="flex items-center justify-center gap-6 text-xs">
+            <span className="flex items-center gap-1.5">
+              <span className="text-base">💪</span>
+              <span className="text-slate-300">L izq = Iniciar</span>
             </span>
-            <span className="flex items-center gap-1">
-              <span>👆</span>
-              <span className="text-slate-400">Dedo = Elegir</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-base">👆</span>
+              <span className="text-slate-300">Dedo = Elegir</span>
             </span>
-            <span className="flex items-center gap-1">
-              <span>👍</span>
-              <span className="text-slate-400">OK = Fin</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-base">👍</span>
+              <span className="text-slate-300">OK = Fin</span>
             </span>
           </div>
         </div>
