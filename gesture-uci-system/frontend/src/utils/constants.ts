@@ -1,9 +1,9 @@
 import { KeyNode } from '@/types';
 
-// Detectar si es dispositivo móvil
+// Detectar si es dispositivo móvil o tablet (< 1024px para coincidir con lg: breakpoint)
 export const isMobileDevice = (): boolean => {
   if (typeof window === 'undefined') return false;
-  return window.innerWidth < 640;
+  return window.innerWidth < 1024;
 };
 
 // Sistema responsive: círculos se adaptan al viewport

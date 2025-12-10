@@ -109,8 +109,8 @@ function App() {
       {/* Overlay de landmarks */}
       <LandmarksOverlay canvasSize={canvasSize} />
 
-      {/* Header responsive - oculto en mobile para maximizar espacio */}
-      <header className="hidden sm:flex fixed top-0 left-0 right-0 z-30 px-6 py-4 items-center justify-between">
+      {/* Header responsive - oculto en mobile/tablet para maximizar espacio */}
+      <header className="hidden lg:flex fixed top-0 left-0 right-0 z-30 px-6 py-4 items-center justify-between">
         <div>
           <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
             DOCommunication
@@ -122,8 +122,8 @@ function App() {
       {/* Indicador de estado - se maneja por separado */}
       <StateIndicator state={systemState} />
 
-      {/* Área de círculos - mobile: desde arriba, desktop: debajo del header */}
-      <div className="fixed top-[5%] sm:top-[18%] left-0 right-0 z-20">
+      {/* Área de círculos - mobile/tablet: desde arriba, desktop: debajo del header */}
+      <div className="fixed top-[5%] lg:top-[18%] left-0 right-0 z-20">
         <VirtualKeyboard
           keys={graph.nodes.size > 0 ? Array.from(graph.nodes.values()) : UCI_KEYS}
           fingerPosition={fingerPosition}
@@ -139,7 +139,7 @@ function App() {
         <>
           {/* Desktop version */}
           <motion.div
-            className="hidden sm:block fixed top-[40%] right-4 md:right-6 z-30 bg-slate-800/90 backdrop-blur-md rounded-xl p-5 text-white min-w-[300px] max-w-[400px] shadow-2xl border border-slate-700/50"
+            className="hidden lg:block fixed top-[40%] right-4 md:right-6 z-30 bg-slate-800/90 backdrop-blur-md rounded-xl p-5 text-white min-w-[300px] max-w-[400px] shadow-2xl border border-slate-700/50"
             initial={{ x: 400, opacity: 0 }}
             animate={{ x: 0, opacity: 1 }}
             transition={{ duration: 0.4, type: 'spring' }}
@@ -181,7 +181,7 @@ function App() {
 
           {/* Mobile version - minimal bar at bottom */}
           <motion.div
-            className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/80 backdrop-blur-sm px-2 py-1 text-white"
+            className="lg:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/80 backdrop-blur-sm px-2 py-1 text-white"
             initial={{ y: 50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.3 }}
@@ -211,7 +211,7 @@ function App() {
       )}
 
       {/* Panel de instrucciones - solo desktop */}
-      <div className="hidden sm:block fixed bottom-4 left-4 z-40 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3 text-white text-xs space-y-1.5 max-w-[220px] border border-slate-700/30">
+      <div className="hidden lg:block fixed bottom-4 left-4 z-40 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3 text-white text-xs space-y-1.5 max-w-[220px] border border-slate-700/30">
         <div className="font-semibold text-slate-300 mb-2 text-sm">Controles</div>
         <div className="flex items-center gap-2">
           <span className="w-5 text-center text-sm">💪</span>
@@ -257,7 +257,7 @@ function App() {
             ease: 'easeInOut'
           }}
         >
-          <div className="w-4 h-4 sm:w-5 sm:h-5 bg-yellow-400 rounded-full border-2 sm:border-3 border-white shadow-lg shadow-yellow-400/50" />
+          <div className="w-4 h-4 lg:w-5 lg:h-5 bg-yellow-400 rounded-full border-2 lg:border-3 border-white shadow-lg shadow-yellow-400/50" />
         </motion.div>
       )}
 
