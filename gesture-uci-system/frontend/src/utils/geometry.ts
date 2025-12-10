@@ -172,57 +172,46 @@ function isArmVisibleInFrame(
  * @returns true si el antebrazo está levantado
  */
 function isArmRaised(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
-  // El antebrazo debe estar levantado: muñeca debe estar más arriba o al mismo nivel que el codo
-  // Añadimos tolerancia de 0.15 para no ser demasiado estricto
-  return wrist.y < elbow.y + 0.15;
+  // El antebrazo debe estar levantado: muñeca debe estar más arriba o casi al mismo nivel que el codo
+  // Tolerancia de 0.25 para ser más permisivo en mobile
+  return wrist.y < elbow.y + 0.25;
 }
 
 /**
  * Detecta L-pose en mobile usando solo codo y muñeca (sin necesitar el hombro)
- * Útil cuando la cámara no alcanza a captar el hombro
+ * Más permisivo que la detección completa porque no tenemos el ángulo exacto
  * @param elbow - Landmark del codo
  * @param wrist - Landmark de la muñeca
  * @returns true si el antebrazo sugiere una pose de L
  */
 function detectForearmLPose(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
-  // El antebrazo debe estar aproximadamente horizontal o apuntando hacia arriba
-  // En una L, el antebrazo está perpendicular al brazo superior
-
-  // Calcular el ángulo del antebrazo respecto a la horizontal
   const deltaX = wrist.x - elbow.x;
   const deltaY = wrist.y - elbow.y;
 
   // Ángulo en grados (0° = horizontal derecha, 90° = vertical abajo, -90° = vertical arriba)
   const forearmAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
 
-  // Para una L válida, el antebrazo debe estar:
-  // - Aproximadamente horizontal (entre -45° y 45°) o
-  // - Apuntando hacia arriba (entre -90° y -45°)
-  // Básicamente, no debe estar apuntando hacia abajo
-  const isHorizontalOrUp = forearmAngle > -100 && forearmAngle < 45;
+  // MUY PERMISIVO: Aceptar cualquier ángulo excepto cuando el antebrazo apunta hacia abajo (>60°)
+  // Esto permite: horizontal izquierda, horizontal derecha, diagonal arriba, vertical arriba
+  const isNotPointingDown = forearmAngle < 60 && forearmAngle > -180;
 
-  // Además, la muñeca debe estar a una distancia razonable del codo (brazo extendido, no pegado al cuerpo)
+  // Distancia mínima del antebrazo (más pequeña para ser permisivo)
   const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-  const hasReasonableLength = distance > 0.08; // Al menos 8% del ancho de pantalla
+  const hasReasonableLength = distance > 0.05; // Al menos 5% del ancho de pantalla
 
-  return isHorizontalOrUp && hasReasonableLength;
+  return isNotPointingDown && hasReasonableLength;
 }
 
 /**
  * Verifica si codo y muñeca están visibles en el frame (para detección mobile sin hombro)
+ * Sin margen - aceptar si están en cualquier parte del frame
  */
 function isForearmVisibleInFrame(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
-  const margin = 0.03; // Margen más pequeño para mobile
-  const minX = margin;
-  const maxX = 1 - margin;
-  const minY = margin;
-  const maxY = 1 - margin;
-
-  // Solo verificar codo y muñeca
-  if (elbow.x < minX || elbow.x > maxX || elbow.y < minY || elbow.y > maxY) {
+  // Sin margen - solo verificar que estén dentro del frame (0-1)
+  if (elbow.x < 0 || elbow.x > 1 || elbow.y < 0 || elbow.y > 1) {
     return false;
   }
-  if (wrist.x < minX || wrist.x > maxX || wrist.y < minY || wrist.y > maxY) {
+  if (wrist.x < 0 || wrist.x > 1 || wrist.y < 0 || wrist.y > 1) {
     return false;
   }
 
