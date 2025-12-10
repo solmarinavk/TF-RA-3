@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { SystemState, PoseLandmark, HandLandmark, GraphEdge, GraphMetrics } from '@/types';
-import { UCI_KEYS, getLPoseDuration } from '@/utils/constants';
+import { UCI_KEYS, getLPoseDuration, isMobileDevice } from '@/utils/constants';
 import { InteractionGraph, createInteractionGraph } from '@/utils/graphEngine';
 
 interface AppState {
@@ -118,12 +118,15 @@ export const useAppStore = create<AppState>((set, get) => ({
       set({ leftArmGestureStart: null, gestureProgress: 0, gestureType: 'none' });
     }
 
-    // TRANSICIÓN: RECORDING → PROCESSING (brazo DERECHO en L + mano cerrada/puño)
-    const stopCondition = rightArmInL && rightHandClosed;
+    // TRANSICIÓN: RECORDING → PROCESSING
+    // Desktop: brazo DERECHO en L + pulgar arriba
+    // Mobile: solo pulgar arriba (👍) - más fácil en pantalla pequeña
+    const isMobile = isMobileDevice();
+    const stopCondition = isMobile ? rightHandClosed : (rightArmInL && rightHandClosed);
 
     if (state.systemState === 'RECORDING' && stopCondition) {
       if (state.rightArmGestureStart === null) {
-        console.log('⏱️ Brazo DERECHO en L + PUÑO detectado - Iniciando cuenta regresiva para finalizar...');
+        console.log(isMobile ? '⏱️ 👍 PULGAR ARRIBA detectado - Iniciando cuenta regresiva...' : '⏱️ Brazo DERECHO en L + PUÑO detectado - Iniciando cuenta regresiva para finalizar...');
         set({ rightArmGestureStart: now, gestureType: 'stopping' });
       } else {
         const elapsed = now - state.rightArmGestureStart;
@@ -152,7 +155,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       }
     } else if (!stopCondition && state.systemState === 'RECORDING') {
       if (state.rightArmGestureStart !== null) {
-        console.log('❌ Gesto de FINALIZACIÓN interrumpido - mantén brazo derecho en L + puño');
+        console.log(isMobile ? '❌ Gesto interrumpido - mantén el pulgar arriba 👍' : '❌ Gesto de FINALIZACIÓN interrumpido - mantén brazo derecho en L + puño');
       }
       set({ rightArmGestureStart: null, gestureProgress: 0, gestureType: 'none' });
     }
