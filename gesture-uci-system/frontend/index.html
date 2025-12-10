@@ -10,19 +10,7 @@
     <link rel="manifest" href="/public/manifest.json" />
     <title>DOCommunication - Gesture Communication System</title>
     <style>
-      /* Forzar landscape en móvil y tablet */
-      @media screen and (max-width: 1024px) and (orientation: portrait) {
-        html {
-          transform: rotate(90deg);
-          transform-origin: left top;
-          width: 100vh;
-          height: 100vw;
-          overflow-x: hidden;
-          position: absolute;
-          top: 100%;
-          left: 0;
-        }
-      }
+      /* Estilos base - sin rotación forzada que rompe coordenadas */
     </style>
   </head>
   <body>
