@@ -123,7 +123,7 @@ function App() {
       </header>
 
       {/* Área de círculos - completamente responsive */}
-      <div className="fixed top-[15%] sm:top-[18%] left-0 right-0 z-20">
+      <div className="fixed top-[12%] sm:top-[18%] left-0 right-0 z-20">
         <VirtualKeyboard
           keys={graph.nodes.size > 0 ? Array.from(graph.nodes.values()) : UCI_KEYS}
           fingerPosition={fingerPosition}
@@ -137,8 +137,8 @@ function App() {
       {/* Panel de mensaje actual - pegado a la derecha */}
       {systemState !== 'IDLE' && (
         <motion.div
-          className="fixed top-[45%] sm:top-[40%] right-3 sm:right-4 md:right-6 z-30 bg-slate-800/90 backdrop-blur-md rounded-xl p-4 sm:p-5 text-white w-[calc(100%-1.5rem)] sm:w-auto min-w-[280px] sm:min-w-[300px] max-w-[400px] shadow-2xl border border-slate-700/50"
-          initial={{ x: 400, opacity: 0 }}
+          className="fixed top-[42%] sm:top-[40%] left-3 sm:left-auto sm:right-4 md:right-6 z-30 bg-slate-800/90 backdrop-blur-md rounded-xl p-3 sm:p-5 text-white w-auto sm:w-auto min-w-[180px] sm:min-w-[300px] max-w-[200px] sm:max-w-[400px] shadow-2xl border border-slate-700/50"
+          initial={{ x: typeof window !== 'undefined' && window.innerWidth < 640 ? -200 : 400, opacity: 0 }}
           animate={{ x: 0, opacity: 1 }}
           transition={{ duration: 0.4, type: 'spring' }}
         >

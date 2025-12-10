@@ -18,16 +18,16 @@ export function GestureProgressBar({ progress, label, color, visible }: GestureP
       exit={{ scale: 0, opacity: 0 }}
       transition={{ type: 'spring', stiffness: 300, damping: 20 }}
     >
-      <div className="bg-gray-900 bg-opacity-95 backdrop-blur-lg rounded-2xl p-8 shadow-2xl border-4 border-white min-w-[400px]">
+      <div className="bg-gray-900 bg-opacity-95 backdrop-blur-lg rounded-2xl p-4 sm:p-8 shadow-2xl border-2 sm:border-4 border-white w-[calc(100vw-2rem)] sm:w-auto sm:min-w-[400px] max-w-[400px]">
         {/* Título */}
-        <div className="text-center mb-6">
-          <div className="text-4xl mb-3">{progress < 100 ? '⏱️' : '✅'}</div>
-          <h3 className="text-white text-2xl font-bold mb-2">{label}</h3>
-          <p className="text-gray-400 text-sm">Mantén la posición...</p>
+        <div className="text-center mb-4 sm:mb-6">
+          <div className="text-2xl sm:text-4xl mb-2 sm:mb-3">{progress < 100 ? '⏱️' : '✅'}</div>
+          <h3 className="text-white text-lg sm:text-2xl font-bold mb-1 sm:mb-2">{label}</h3>
+          <p className="text-gray-400 text-xs sm:text-sm">Mantén la posición...</p>
         </div>
 
         {/* Barra de progreso */}
-        <div className="relative w-full h-8 bg-gray-700 rounded-full overflow-hidden mb-4">
+        <div className="relative w-full h-6 sm:h-8 bg-gray-700 rounded-full overflow-hidden mb-3 sm:mb-4">
           <motion.div
             className="absolute inset-y-0 left-0 rounded-full"
             style={{
@@ -41,14 +41,14 @@ export function GestureProgressBar({ progress, label, color, visible }: GestureP
 
           {/* Texto de porcentaje */}
           <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-white font-bold text-lg drop-shadow-lg">
+            <span className="text-white font-bold text-sm sm:text-lg drop-shadow-lg">
               {Math.round(progress)}%
             </span>
           </div>
         </div>
 
         {/* Tiempo restante */}
-        <div className="text-center text-gray-300 text-sm">
+        <div className="text-center text-gray-300 text-xs sm:text-sm">
           {progress < 100 ? (
             <>Tiempo restante: {((2 - (progress / 50)) ).toFixed(1)}s</>
           ) : (
@@ -58,7 +58,7 @@ export function GestureProgressBar({ progress, label, color, visible }: GestureP
 
         {/* Anillo animado */}
         <motion.div
-          className="absolute -inset-4 rounded-2xl border-4 pointer-events-none"
+          className="absolute -inset-2 sm:-inset-4 rounded-2xl border-2 sm:border-4 pointer-events-none"
           style={{ borderColor: color }}
           animate={{
             opacity: [0.3, 0.6, 0.3],
