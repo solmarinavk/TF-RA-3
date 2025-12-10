@@ -178,7 +178,61 @@ function isArmRaised(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
 }
 
 /**
+ * Detecta L-pose en mobile usando solo codo y muñeca (sin necesitar el hombro)
+ * Útil cuando la cámara no alcanza a captar el hombro
+ * @param elbow - Landmark del codo
+ * @param wrist - Landmark de la muñeca
+ * @returns true si el antebrazo sugiere una pose de L
+ */
+function detectForearmLPose(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
+  // El antebrazo debe estar aproximadamente horizontal o apuntando hacia arriba
+  // En una L, el antebrazo está perpendicular al brazo superior
+
+  // Calcular el ángulo del antebrazo respecto a la horizontal
+  const deltaX = wrist.x - elbow.x;
+  const deltaY = wrist.y - elbow.y;
+
+  // Ángulo en grados (0° = horizontal derecha, 90° = vertical abajo, -90° = vertical arriba)
+  const forearmAngle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+
+  // Para una L válida, el antebrazo debe estar:
+  // - Aproximadamente horizontal (entre -45° y 45°) o
+  // - Apuntando hacia arriba (entre -90° y -45°)
+  // Básicamente, no debe estar apuntando hacia abajo
+  const isHorizontalOrUp = forearmAngle > -100 && forearmAngle < 45;
+
+  // Además, la muñeca debe estar a una distancia razonable del codo (brazo extendido, no pegado al cuerpo)
+  const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+  const hasReasonableLength = distance > 0.08; // Al menos 8% del ancho de pantalla
+
+  return isHorizontalOrUp && hasReasonableLength;
+}
+
+/**
+ * Verifica si codo y muñeca están visibles en el frame (para detección mobile sin hombro)
+ */
+function isForearmVisibleInFrame(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
+  const margin = 0.03; // Margen más pequeño para mobile
+  const minX = margin;
+  const maxX = 1 - margin;
+  const minY = margin;
+  const maxY = 1 - margin;
+
+  // Solo verificar codo y muñeca
+  if (elbow.x < minX || elbow.x > maxX || elbow.y < minY || elbow.y > maxY) {
+    return false;
+  }
+  if (wrist.x < minX || wrist.x > maxX || wrist.y < minY || wrist.y > maxY) {
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Detecta ambos brazos en postura L
+ * En mobile: permite detección sin hombro visible (solo codo + muñeca)
+ * En desktop: requiere hombro + codo + muñeca visibles
  * @param landmarks - Array de pose landmarks
  * @returns Objeto con estado de cada brazo y si está visible en pantalla
  */
@@ -211,41 +265,57 @@ export function detectLPose(landmarks: PoseLandmark[]): {
 
   const minVisibility = getMinLandmarkVisibility();
   const angleTolerance = getLPoseAngleTolerance();
+  const isMobile = isMobileDevice();
 
   let leftAngle: number | null = null;
   let rightAngle: number | null = null;
   let leftVisibleInFrame = false;
   let rightVisibleInFrame = false;
+  let leftDetected = false;
+  let rightDetected = false;
 
-  // Calcular ángulo izquierdo
-  if (
-    leftShoulder?.visibility && leftShoulder.visibility >= minVisibility &&
-    leftElbow?.visibility && leftElbow.visibility >= minVisibility &&
-    leftWrist?.visibility && leftWrist.visibility >= minVisibility
-  ) {
+  // === BRAZO IZQUIERDO ===
+  const leftShoulderVisible = leftShoulder?.visibility && leftShoulder.visibility >= minVisibility;
+  const leftElbowVisible = leftElbow?.visibility && leftElbow.visibility >= minVisibility;
+  const leftWristVisible = leftWrist?.visibility && leftWrist.visibility >= minVisibility;
+
+  if (leftShoulderVisible && leftElbowVisible && leftWristVisible) {
+    // Detección completa con hombro visible (desktop y mobile)
     leftAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
     leftVisibleInFrame = isArmVisibleInFrame(leftShoulder, leftElbow, leftWrist);
+    const leftArmRaised = isMobile ? isArmRaised(leftElbow, leftWrist) : true;
+    leftDetected = Math.abs(leftAngle - 90) < angleTolerance && leftVisibleInFrame && leftArmRaised;
+  } else if (isMobile && leftElbowVisible && leftWristVisible) {
+    // MOBILE ONLY: Detección alternativa sin hombro
+    // Usar ángulo del antebrazo para inferir pose de L
+    leftVisibleInFrame = isForearmVisibleInFrame(leftElbow, leftWrist);
+    const leftArmRaised = isArmRaised(leftElbow, leftWrist);
+    const forearmLPose = detectForearmLPose(leftElbow, leftWrist);
+    leftDetected = leftVisibleInFrame && leftArmRaised && forearmLPose;
   }
 
-  // Calcular ángulo derecho
-  if (
-    rightShoulder?.visibility && rightShoulder.visibility >= minVisibility &&
-    rightElbow?.visibility && rightElbow.visibility >= minVisibility &&
-    rightWrist?.visibility && rightWrist.visibility >= minVisibility
-  ) {
+  // === BRAZO DERECHO ===
+  const rightShoulderVisible = rightShoulder?.visibility && rightShoulder.visibility >= minVisibility;
+  const rightElbowVisible = rightElbow?.visibility && rightElbow.visibility >= minVisibility;
+  const rightWristVisible = rightWrist?.visibility && rightWrist.visibility >= minVisibility;
+
+  if (rightShoulderVisible && rightElbowVisible && rightWristVisible) {
+    // Detección completa con hombro visible (desktop y mobile)
     rightAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
     rightVisibleInFrame = isArmVisibleInFrame(rightShoulder, rightElbow, rightWrist);
+    const rightArmRaised = isMobile ? isArmRaised(rightElbow, rightWrist) : true;
+    rightDetected = Math.abs(rightAngle - 90) < angleTolerance && rightArmRaised;
+  } else if (isMobile && rightElbowVisible && rightWristVisible) {
+    // MOBILE ONLY: Detección alternativa sin hombro
+    rightVisibleInFrame = isForearmVisibleInFrame(rightElbow, rightWrist);
+    const rightArmRaised = isArmRaised(rightElbow, rightWrist);
+    const forearmLPose = detectForearmLPose(rightElbow, rightWrist);
+    rightDetected = rightVisibleInFrame && rightArmRaised && forearmLPose;
   }
 
-  const isMobile = isMobileDevice();
-
-  // En móvil: requerir que el brazo esté levantado para evitar falsos positivos
-  const leftArmRaised = isMobile ? isArmRaised(leftElbow, leftWrist) : true;
-  const rightArmRaised = isMobile ? isArmRaised(rightElbow, rightWrist) : true;
-
   return {
-    left: leftAngle !== null && Math.abs(leftAngle - 90) < angleTolerance && leftVisibleInFrame && leftArmRaised,
-    right: rightAngle !== null && Math.abs(rightAngle - 90) < angleTolerance && rightArmRaised,
+    left: leftDetected,
+    right: rightDetected,
     leftAngle,
     rightAngle,
     leftVisibleInFrame,
