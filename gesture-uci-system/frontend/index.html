@@ -3,11 +3,27 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/x-icon" href="/public/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <meta name="screen-orientation" content="landscape" />
     <meta name="description" content="DOCommunication - Sistema de comunicación gestual para UCI y quirófanos" />
     <meta name="theme-color" content="#0f172a" />
     <link rel="manifest" href="/public/manifest.json" />
     <title>DOCommunication - Gesture Communication System</title>
+    <style>
+      /* Forzar landscape en móvil */
+      @media screen and (max-width: 640px) and (orientation: portrait) {
+        html {
+          transform: rotate(90deg);
+          transform-origin: left top;
+          width: 100vh;
+          height: 100vw;
+          overflow-x: hidden;
+          position: absolute;
+          top: 100%;
+          left: 0;
+        }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>

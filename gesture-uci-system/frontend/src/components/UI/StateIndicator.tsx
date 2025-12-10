@@ -89,39 +89,23 @@ export const StateIndicator: React.FC<StateIndicatorProps> = ({ state }) => {
         </div>
       </motion.div>
 
-      {/* Mobile version - compact pill at bottom-right */}
+      {/* Mobile version - minimal indicator at top-right corner */}
       <motion.div
-        className="sm:hidden fixed bottom-4 right-3 z-50"
-        initial={{ x: 100, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.4, type: 'spring' }}
+        className="sm:hidden fixed top-1 right-1 z-50"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ duration: 0.3, type: 'spring' }}
       >
         <div
-          className={`${config.color} text-white px-3 py-2 rounded-full shadow-lg flex items-center gap-2`}
+          className={`${config.color} text-white px-1.5 py-0.5 rounded-full shadow-md flex items-center gap-1 opacity-80`}
         >
-          {/* Emoji */}
-          <motion.span
-            className="text-base"
-            animate={config.pulse ? {
-              scale: [1, 1.15, 1]
-            } : {}}
-            transition={{
-              duration: 1.5,
-              repeat: config.pulse ? Infinity : 0
-            }}
-          >
-            {config.emoji}
-          </motion.span>
-
-          {/* Texto compacto */}
-          <span className="font-semibold text-xs">
-            {config.mobileText}
-          </span>
+          {/* Emoji pequeño */}
+          <span className="text-[10px]">{config.emoji}</span>
 
           {/* Dot pulsante */}
           {config.pulse && (
             <motion.div
-              className="w-2 h-2 bg-white rounded-full"
+              className="w-1.5 h-1.5 bg-white rounded-full"
               animate={{
                 scale: [1, 1.5, 1],
                 opacity: [1, 0.5, 1]

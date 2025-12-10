@@ -109,21 +109,21 @@ function App() {
       {/* Overlay de landmarks */}
       <LandmarksOverlay canvasSize={canvasSize} />
 
-      {/* Header responsive */}
-      <header className="fixed top-0 left-0 right-0 z-30 px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+      {/* Header responsive - oculto en mobile para maximizar espacio */}
+      <header className="hidden sm:flex fixed top-0 left-0 right-0 z-30 px-6 py-4 items-center justify-between">
         <div>
-          <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-white tracking-tight">
+          <h1 className="text-xl md:text-2xl font-bold text-white tracking-tight">
             DOCommunication
           </h1>
-          <p className="text-xs text-slate-500 hidden sm:block">Sistema de Comunicación Gestual</p>
+          <p className="text-xs text-slate-500">Sistema de Comunicación Gestual</p>
         </div>
-
-        {/* Indicador de estado */}
-        <StateIndicator state={systemState} />
       </header>
 
-      {/* Área de círculos - completamente responsive */}
-      <div className="fixed top-[12%] sm:top-[18%] left-0 right-0 z-20">
+      {/* Indicador de estado - se maneja por separado */}
+      <StateIndicator state={systemState} />
+
+      {/* Área de círculos - mobile: desde arriba, desktop: debajo del header */}
+      <div className="fixed top-[5%] sm:top-[18%] left-0 right-0 z-20">
         <VirtualKeyboard
           keys={graph.nodes.size > 0 ? Array.from(graph.nodes.values()) : UCI_KEYS}
           fingerPosition={fingerPosition}
@@ -134,66 +134,98 @@ function App() {
         />
       </div>
 
-      {/* Panel de mensaje actual - pegado a la derecha */}
+      {/* Panel de mensaje actual - Desktop: derecha, Mobile: abajo compacto */}
       {systemState !== 'IDLE' && (
-        <motion.div
-          className="fixed top-[42%] sm:top-[40%] left-3 sm:left-auto sm:right-4 md:right-6 z-30 bg-slate-800/90 backdrop-blur-md rounded-xl p-3 sm:p-5 text-white w-auto sm:w-auto min-w-[180px] sm:min-w-[300px] max-w-[200px] sm:max-w-[400px] shadow-2xl border border-slate-700/50"
-          initial={{ x: typeof window !== 'undefined' && window.innerWidth < 640 ? -200 : 400, opacity: 0 }}
-          animate={{ x: 0, opacity: 1 }}
-          transition={{ duration: 0.4, type: 'spring' }}
-        >
-          <h3 className="font-semibold text-sm sm:text-base mb-3 sm:mb-4 flex items-center gap-2 text-slate-200">
-            <span className="text-base sm:text-lg">💬</span>
-            Mensaje en construcción
-          </h3>
+        <>
+          {/* Desktop version */}
+          <motion.div
+            className="hidden sm:block fixed top-[40%] right-4 md:right-6 z-30 bg-slate-800/90 backdrop-blur-md rounded-xl p-5 text-white min-w-[300px] max-w-[400px] shadow-2xl border border-slate-700/50"
+            initial={{ x: 400, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            transition={{ duration: 0.4, type: 'spring' }}
+          >
+            <h3 className="font-semibold text-base mb-4 flex items-center gap-2 text-slate-200">
+              <span className="text-lg">💬</span>
+              Mensaje en construcción
+            </h3>
 
-          {currentMessage.length === 0 ? (
-            <div className="text-slate-500 text-xs sm:text-sm text-center py-3 sm:py-4">
-              Apunta a un círculo para seleccionar...
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              {currentMessage.map((word, i) => {
-                const keyNode = UCI_KEYS.find(k => k.label === word);
-                return (
-                  <motion.div
-                    key={i}
-                    className="px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-full text-xs sm:text-sm font-medium text-white shadow-md"
-                    style={{ backgroundColor: keyNode?.color || '#3b82f6' }}
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1 }}
-                    transition={{ delay: i * 0.05, type: 'spring' }}
-                  >
-                    {word}
-                  </motion.div>
-                );
-              })}
-            </div>
-          )}
+            {currentMessage.length === 0 ? (
+              <div className="text-slate-500 text-sm text-center py-4">
+                Apunta a un círculo para seleccionar...
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-2">
+                {currentMessage.map((word, i) => {
+                  const keyNode = UCI_KEYS.find(k => k.label === word);
+                  return (
+                    <motion.div
+                      key={i}
+                      className="px-3 py-1.5 rounded-full text-sm font-medium text-white shadow-md"
+                      style={{ backgroundColor: keyNode?.color || '#3b82f6' }}
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ delay: i * 0.05, type: 'spring' }}
+                    >
+                      {word}
+                    </motion.div>
+                  );
+                })}
+              </div>
+            )}
 
-          <div className="mt-3 sm:mt-4 pt-3 border-t border-slate-700/50 flex justify-between items-center text-xs text-slate-500">
-            <span>{selectedKeys.length} selección{selectedKeys.length !== 1 ? 'es' : ''}</span>
-            <span className="text-slate-600 hidden sm:inline">Brazo der. L + 👍 para finalizar</span>
-          </div>
-        </motion.div>
+            <div className="mt-4 pt-3 border-t border-slate-700/50 flex justify-between items-center text-xs text-slate-500">
+              <span>{selectedKeys.length} selección{selectedKeys.length !== 1 ? 'es' : ''}</span>
+              <span className="text-slate-600">Brazo der. L + 👍 para finalizar</span>
+            </div>
+          </motion.div>
+
+          {/* Mobile version - minimal bar at bottom */}
+          <motion.div
+            className="sm:hidden fixed bottom-0 left-0 right-0 z-30 bg-slate-900/80 backdrop-blur-sm px-2 py-1 text-white"
+            initial={{ y: 50, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            {currentMessage.length === 0 ? (
+              <div className="text-slate-500 text-[10px] text-center">
+                👆 Apunta a un círculo
+              </div>
+            ) : (
+              <div className="flex flex-wrap gap-1 justify-center">
+                {currentMessage.map((word, i) => {
+                  const keyNode = UCI_KEYS.find(k => k.label === word);
+                  return (
+                    <span
+                      key={i}
+                      className="px-1.5 py-0.5 rounded text-[9px] font-medium text-white"
+                      style={{ backgroundColor: keyNode?.color || '#3b82f6' }}
+                    >
+                      {word.split(' ')[0]}
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+          </motion.div>
+        </>
       )}
 
-      {/* Panel de instrucciones - responsive */}
-      <div className="fixed bottom-3 sm:bottom-4 left-3 sm:left-4 z-40 bg-slate-800/80 backdrop-blur-sm rounded-lg p-2.5 sm:p-3 text-white text-xs space-y-1 sm:space-y-1.5 max-w-[200px] sm:max-w-[220px] border border-slate-700/30">
-        <div className="font-semibold text-slate-300 mb-1.5 sm:mb-2 text-xs sm:text-sm">Controles</div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="w-4 sm:w-5 text-center text-sm">💪</span>
-          <span className="text-slate-400 text-[10px] sm:text-xs">Brazo izq. en L → Iniciar</span>
+      {/* Panel de instrucciones - solo desktop */}
+      <div className="hidden sm:block fixed bottom-4 left-4 z-40 bg-slate-800/80 backdrop-blur-sm rounded-lg p-3 text-white text-xs space-y-1.5 max-w-[220px] border border-slate-700/30">
+        <div className="font-semibold text-slate-300 mb-2 text-sm">Controles</div>
+        <div className="flex items-center gap-2">
+          <span className="w-5 text-center text-sm">💪</span>
+          <span className="text-slate-400 text-xs">Brazo izq. en L → Iniciar</span>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="w-4 sm:w-5 text-center text-sm">👆</span>
-          <span className="text-slate-400 text-[10px] sm:text-xs">Dedo índice → Seleccionar</span>
+        <div className="flex items-center gap-2">
+          <span className="w-5 text-center text-sm">👆</span>
+          <span className="text-slate-400 text-xs">Dedo índice → Seleccionar</span>
         </div>
-        <div className="flex items-center gap-1.5 sm:gap-2">
-          <span className="w-4 sm:w-5 text-center text-sm">👍</span>
-          <span className="text-slate-400 text-[10px] sm:text-xs">Brazo der. + pulgar → Fin</span>
+        <div className="flex items-center gap-2">
+          <span className="w-5 text-center text-sm">👍</span>
+          <span className="text-slate-400 text-xs">Brazo der. + pulgar → Fin</span>
         </div>
-        <div className="pt-1.5 sm:pt-2 border-t border-slate-700/50 text-slate-600 text-[10px] sm:text-xs">
+        <div className="pt-2 border-t border-slate-700/50 text-slate-600 text-xs">
           {isReady ? '● Sistema listo' : '○ Preparando...'}
         </div>
       </div>
