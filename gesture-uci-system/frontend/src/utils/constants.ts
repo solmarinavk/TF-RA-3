@@ -1,5 +1,11 @@
 import { KeyNode } from '@/types';
 
+// Detectar si es dispositivo móvil
+export const isMobileDevice = (): boolean => {
+  if (typeof window === 'undefined') return false;
+  return window.innerWidth < 640;
+};
+
 // Sistema responsive: círculos se adaptan al viewport
 export const UCI_KEYS: KeyNode[] = [
   { id: 'T1', label: 'Alerta respiratoria', color: '#EF4444', position: { x: 0, y: 0 }, radius: 50, selectionCount: 0, lastSelected: null },
@@ -17,7 +23,28 @@ export const UCI_KEYS: KeyNode[] = [
 export const SELECTION_DURATION = 3000; // 3 segundos
 export const PROXIMITY_THRESHOLD = 80; // pixels
 export const HOVER_THRESHOLD = 60; // pixels
-export const L_POSE_ANGLE_TOLERANCE = 45; // grados (MUY permisivo: 45-135 grados)
-export const L_POSE_DURATION = 2000; // 2 segundos con feedback visual
+
+// Parámetros de detección de gestos - más estrictos en móvil
+export const L_POSE_ANGLE_TOLERANCE = 45; // grados (desktop: 45-135 grados)
+export const L_POSE_ANGLE_TOLERANCE_MOBILE = 25; // grados (móvil: 65-115 grados, más estricto)
+
+export const L_POSE_DURATION = 2000; // 2 segundos (desktop)
+export const L_POSE_DURATION_MOBILE = 2500; // 2.5 segundos (móvil, más tiempo para evitar falsos positivos)
+
+export const MIN_LANDMARK_VISIBILITY = 0.3; // desktop: más permisivo
+export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.5; // móvil: más estricto, requiere mejor visibilidad
+
 export const FPS_TARGET = 30;
-export const MIN_LANDMARK_VISIBILITY = 0.3; // más permisivo para no perder gestos
+
+// Funciones helper para obtener valores según dispositivo
+export const getLPoseAngleTolerance = (): number => {
+  return isMobileDevice() ? L_POSE_ANGLE_TOLERANCE_MOBILE : L_POSE_ANGLE_TOLERANCE;
+};
+
+export const getLPoseDuration = (): number => {
+  return isMobileDevice() ? L_POSE_DURATION_MOBILE : L_POSE_DURATION;
+};
+
+export const getMinLandmarkVisibility = (): number => {
+  return isMobileDevice() ? MIN_LANDMARK_VISIBILITY_MOBILE : MIN_LANDMARK_VISIBILITY;
+};

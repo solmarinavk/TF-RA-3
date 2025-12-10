@@ -1,5 +1,5 @@
 import { PoseLandmark, HandLandmark, PoseLandmarkIndex } from '@/types';
-import { L_POSE_ANGLE_TOLERANCE, MIN_LANDMARK_VISIBILITY } from './constants';
+import { getLPoseAngleTolerance, getMinLandmarkVisibility } from './constants';
 
 /**
  * Calcula el ángulo entre tres puntos usando producto punto
@@ -87,11 +87,14 @@ export function detectLeftLPose(landmarks: PoseLandmark[]): boolean {
   const elbow = landmarks[PoseLandmarkIndex.LEFT_ELBOW];
   const wrist = landmarks[PoseLandmarkIndex.LEFT_WRIST];
 
+  const minVisibility = getMinLandmarkVisibility();
+  const angleTolerance = getLPoseAngleTolerance();
+
   // Verificar visibilidad
   if (
-    !shoulder?.visibility || shoulder.visibility < MIN_LANDMARK_VISIBILITY ||
-    !elbow?.visibility || elbow.visibility < MIN_LANDMARK_VISIBILITY ||
-    !wrist?.visibility || wrist.visibility < MIN_LANDMARK_VISIBILITY
+    !shoulder?.visibility || shoulder.visibility < minVisibility ||
+    !elbow?.visibility || elbow.visibility < minVisibility ||
+    !wrist?.visibility || wrist.visibility < minVisibility
   ) {
     return false;
   }
@@ -99,7 +102,7 @@ export function detectLeftLPose(landmarks: PoseLandmark[]): boolean {
   const angle = calculateAngle(shoulder, elbow, wrist);
 
   // Verificar si está cerca de 90 grados
-  return Math.abs(angle - 90) < L_POSE_ANGLE_TOLERANCE;
+  return Math.abs(angle - 90) < angleTolerance;
 }
 
 /**
@@ -114,11 +117,14 @@ export function detectRightLPose(landmarks: PoseLandmark[]): boolean {
   const elbow = landmarks[PoseLandmarkIndex.RIGHT_ELBOW];
   const wrist = landmarks[PoseLandmarkIndex.RIGHT_WRIST];
 
+  const minVisibility = getMinLandmarkVisibility();
+  const angleTolerance = getLPoseAngleTolerance();
+
   // Verificar visibilidad
   if (
-    !shoulder?.visibility || shoulder.visibility < MIN_LANDMARK_VISIBILITY ||
-    !elbow?.visibility || elbow.visibility < MIN_LANDMARK_VISIBILITY ||
-    !wrist?.visibility || wrist.visibility < MIN_LANDMARK_VISIBILITY
+    !shoulder?.visibility || shoulder.visibility < minVisibility ||
+    !elbow?.visibility || elbow.visibility < minVisibility ||
+    !wrist?.visibility || wrist.visibility < minVisibility
   ) {
     return false;
   }
@@ -126,7 +132,7 @@ export function detectRightLPose(landmarks: PoseLandmark[]): boolean {
   const angle = calculateAngle(shoulder, elbow, wrist);
 
   // Verificar si está cerca de 90 grados
-  return Math.abs(angle - 90) < L_POSE_ANGLE_TOLERANCE;
+  return Math.abs(angle - 90) < angleTolerance;
 }
 
 /**
@@ -191,6 +197,9 @@ export function detectLPose(landmarks: PoseLandmark[]): {
   const rightElbow = landmarks[PoseLandmarkIndex.RIGHT_ELBOW];
   const rightWrist = landmarks[PoseLandmarkIndex.RIGHT_WRIST];
 
+  const minVisibility = getMinLandmarkVisibility();
+  const angleTolerance = getLPoseAngleTolerance();
+
   let leftAngle: number | null = null;
   let rightAngle: number | null = null;
   let leftVisibleInFrame = false;
@@ -198,9 +207,9 @@ export function detectLPose(landmarks: PoseLandmark[]): {
 
   // Calcular ángulo izquierdo
   if (
-    leftShoulder?.visibility && leftShoulder.visibility >= MIN_LANDMARK_VISIBILITY &&
-    leftElbow?.visibility && leftElbow.visibility >= MIN_LANDMARK_VISIBILITY &&
-    leftWrist?.visibility && leftWrist.visibility >= MIN_LANDMARK_VISIBILITY
+    leftShoulder?.visibility && leftShoulder.visibility >= minVisibility &&
+    leftElbow?.visibility && leftElbow.visibility >= minVisibility &&
+    leftWrist?.visibility && leftWrist.visibility >= minVisibility
   ) {
     leftAngle = calculateAngle(leftShoulder, leftElbow, leftWrist);
     leftVisibleInFrame = isArmVisibleInFrame(leftShoulder, leftElbow, leftWrist);
@@ -208,17 +217,17 @@ export function detectLPose(landmarks: PoseLandmark[]): {
 
   // Calcular ángulo derecho
   if (
-    rightShoulder?.visibility && rightShoulder.visibility >= MIN_LANDMARK_VISIBILITY &&
-    rightElbow?.visibility && rightElbow.visibility >= MIN_LANDMARK_VISIBILITY &&
-    rightWrist?.visibility && rightWrist.visibility >= MIN_LANDMARK_VISIBILITY
+    rightShoulder?.visibility && rightShoulder.visibility >= minVisibility &&
+    rightElbow?.visibility && rightElbow.visibility >= minVisibility &&
+    rightWrist?.visibility && rightWrist.visibility >= minVisibility
   ) {
     rightAngle = calculateAngle(rightShoulder, rightElbow, rightWrist);
     rightVisibleInFrame = isArmVisibleInFrame(rightShoulder, rightElbow, rightWrist);
   }
 
   return {
-    left: leftAngle !== null && Math.abs(leftAngle - 90) < L_POSE_ANGLE_TOLERANCE && leftVisibleInFrame,
-    right: rightAngle !== null && Math.abs(rightAngle - 90) < L_POSE_ANGLE_TOLERANCE,
+    left: leftAngle !== null && Math.abs(leftAngle - 90) < angleTolerance && leftVisibleInFrame,
+    right: rightAngle !== null && Math.abs(rightAngle - 90) < angleTolerance,
     leftAngle,
     rightAngle,
     leftVisibleInFrame,

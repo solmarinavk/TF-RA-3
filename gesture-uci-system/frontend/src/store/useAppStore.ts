@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { SystemState, PoseLandmark, HandLandmark, GraphEdge, GraphMetrics } from '@/types';
-import { UCI_KEYS, L_POSE_DURATION } from '@/utils/constants';
+import { UCI_KEYS, getLPoseDuration } from '@/utils/constants';
 import { InteractionGraph, createInteractionGraph } from '@/utils/graphEngine';
 
 interface AppState {
@@ -86,6 +86,7 @@ export const useAppStore = create<AppState>((set, get) => ({
   updateGestureState: (leftArmInL: boolean, rightArmInL: boolean, rightHandClosed: boolean = false) => {
     const state = get();
     const now = Date.now();
+    const poseDuration = getLPoseDuration(); // Usa duración adaptativa (más larga en móvil)
 
     // TRANSICIÓN: IDLE → RECORDING (solo brazo IZQUIERDO en L)
     if (state.systemState === 'IDLE' && leftArmInL) {
@@ -94,10 +95,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         set({ leftArmGestureStart: now, gestureType: 'starting' });
       } else {
         const elapsed = now - state.leftArmGestureStart;
-        const progress = Math.min((elapsed / L_POSE_DURATION) * 100, 100);
+        const progress = Math.min((elapsed / poseDuration) * 100, 100);
         set({ gestureProgress: progress, gestureType: 'starting' });
 
-        if (elapsed >= L_POSE_DURATION) {
+        if (elapsed >= poseDuration) {
           console.log('🎬 RECORDING STARTED - Brazo izquierdo en L confirmado');
           set({
             systemState: 'RECORDING',
@@ -126,10 +127,10 @@ export const useAppStore = create<AppState>((set, get) => ({
         set({ rightArmGestureStart: now, gestureType: 'stopping' });
       } else {
         const elapsed = now - state.rightArmGestureStart;
-        const progress = Math.min((elapsed / L_POSE_DURATION) * 100, 100);
+        const progress = Math.min((elapsed / poseDuration) * 100, 100);
         set({ gestureProgress: progress, gestureType: 'stopping' });
 
-        if (elapsed >= L_POSE_DURATION) {
+        if (elapsed >= poseDuration) {
           console.log('⚙️ PROCESSING - Brazo derecho en L + puño confirmado');
           set({
             systemState: 'PROCESSING',
