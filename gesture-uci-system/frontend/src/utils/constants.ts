@@ -24,15 +24,15 @@ export const SELECTION_DURATION = 3000; // 3 segundos
 export const PROXIMITY_THRESHOLD = 80; // pixels
 export const HOVER_THRESHOLD = 60; // pixels
 
-// Parámetros de detección de gestos - más estrictos en móvil
-export const L_POSE_ANGLE_TOLERANCE = 45; // grados (desktop: 45-135 grados)
-export const L_POSE_ANGLE_TOLERANCE_MOBILE = 38; // grados (móvil: 52-128 grados, ligeramente más estricto)
+// Parámetros de detección de gestos - iguales en móvil y desktop
+export const L_POSE_ANGLE_TOLERANCE = 45; // grados (45-135 grados)
+export const L_POSE_ANGLE_TOLERANCE_MOBILE = 45; // móvil: igual que desktop
 
-export const L_POSE_DURATION = 2000; // 2 segundos (desktop)
-export const L_POSE_DURATION_MOBILE = 2300; // 2.3 segundos (móvil, un poco más para evitar falsos positivos)
+export const L_POSE_DURATION = 2000; // 2 segundos
+export const L_POSE_DURATION_MOBILE = 2000; // móvil: igual que desktop
 
-export const MIN_LANDMARK_VISIBILITY = 0.3; // desktop: más permisivo
-export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.35; // móvil: ligeramente más estricto
+export const MIN_LANDMARK_VISIBILITY = 0.3; // umbral de visibilidad
+export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.25; // móvil: ligeramente más permisivo (cámara frontal)
 
 export const FPS_TARGET = 30;
 
