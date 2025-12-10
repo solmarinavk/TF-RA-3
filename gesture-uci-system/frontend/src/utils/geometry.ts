@@ -137,7 +137,6 @@ export function detectRightLPose(landmarks: PoseLandmark[]): boolean {
 
 /**
  * Verifica si un brazo está completamente visible en pantalla
- * En móvil es más permisivo porque la cámara frontal tiene diferente campo de visión
  * @param shoulder - Landmark del hombro
  * @param elbow - Landmark del codo
  * @param wrist - Landmark de la muñeca
@@ -148,9 +147,7 @@ function isArmVisibleInFrame(
   elbow: PoseLandmark,
   wrist: PoseLandmark
 ): boolean {
-  // En móvil: margen muy pequeño (1%) para ser más permisivo
-  // En desktop: margen normal (5%)
-  const margin = isMobileDevice() ? 0.01 : 0.05;
+  const margin = 0.05;
   const minX = margin;
   const maxX = 1 - margin;
   const minY = margin;
@@ -165,6 +162,19 @@ function isArmVisibleInFrame(
   }
 
   return true;
+}
+
+/**
+ * Verifica si el brazo está levantado (pose de L intencional)
+ * En coordenadas normalizadas, y=0 es arriba, y=1 es abajo
+ * @param elbow - Landmark del codo
+ * @param wrist - Landmark de la muñeca
+ * @returns true si el antebrazo está levantado
+ */
+function isArmRaised(elbow: PoseLandmark, wrist: PoseLandmark): boolean {
+  // El antebrazo debe estar levantado: muñeca debe estar más arriba o al mismo nivel que el codo
+  // Añadimos tolerancia de 0.15 para no ser demasiado estricto
+  return wrist.y < elbow.y + 0.15;
 }
 
 /**
@@ -227,9 +237,15 @@ export function detectLPose(landmarks: PoseLandmark[]): {
     rightVisibleInFrame = isArmVisibleInFrame(rightShoulder, rightElbow, rightWrist);
   }
 
+  const isMobile = isMobileDevice();
+
+  // En móvil: requerir que el brazo esté levantado para evitar falsos positivos
+  const leftArmRaised = isMobile ? isArmRaised(leftElbow, leftWrist) : true;
+  const rightArmRaised = isMobile ? isArmRaised(rightElbow, rightWrist) : true;
+
   return {
-    left: leftAngle !== null && Math.abs(leftAngle - 90) < angleTolerance && leftVisibleInFrame,
-    right: rightAngle !== null && Math.abs(rightAngle - 90) < angleTolerance,
+    left: leftAngle !== null && Math.abs(leftAngle - 90) < angleTolerance && leftVisibleInFrame && leftArmRaised,
+    right: rightAngle !== null && Math.abs(rightAngle - 90) < angleTolerance && rightArmRaised,
     leftAngle,
     rightAngle,
     leftVisibleInFrame,
@@ -386,8 +402,8 @@ export function isHandClosed(handLandmarks: HandLandmark[] | null): boolean {
 
 /**
  * Detecta gesto de pulgar arriba (👍)
- * Para finalizar grabación - más fácil que puño cerrado
- * En móvil es más permisivo para facilitar la detección
+ * Para finalizar grabación - requiere pulgar extendido y dedos cerrados
+ * En móvil: más estricto para evitar activaciones accidentales
  * @param handLandmarks - Array de hand landmarks (21 puntos)
  * @returns true si el pulgar está levantado y los demás dedos cerrados
  */
@@ -397,30 +413,32 @@ export function isThumbsUp(handLandmarks: HandLandmark[] | null): boolean {
   const isMobile = isMobileDevice();
 
   const thumbTip = handLandmarks[4];
-  const thumbIP = handLandmarks[3];
+  const thumbMCP = handLandmarks[2];
   const indexTip = handLandmarks[8];
   const middleTip = handLandmarks[12];
   const ringTip = handLandmarks[16];
   const pinkyTip = handLandmarks[20];
   const indexMCP = handLandmarks[5];
 
-  // 1. El pulgar debe estar extendido hacia arriba
-  // En móvil: más permisivo, acepta pulgar ligeramente más bajo
-  const thumbExtended = isMobile
-    ? thumbTip.y < thumbIP.y + 0.05 // Móvil: más tolerante
-    : thumbTip.y < thumbIP.y;
+  // 1. El pulgar debe estar claramente extendido hacia arriba
+  // Más estricto: pulgar debe estar significativamente arriba del MCP
+  const thumbExtended = thumbTip.y < thumbMCP.y - 0.02;
 
-  // 2. Los otros dedos deben estar doblados (cerca del MCP del índice)
-  // En móvil: umbral más alto (1.0 vs 0.8) para ser más permisivo
-  const foldThreshold = isMobile ? 1.0 : 0.8;
+  // 2. El pulgar debe estar más arriba que las puntas de otros dedos
+  const thumbAboveOthers = thumbTip.y < indexTip.y && thumbTip.y < middleTip.y;
+
+  // 3. Los otros dedos deben estar doblados (cerca de la muñeca/palma)
+  const foldThreshold = 0.7; // Más estricto
   const indexFolded = distance3D(indexTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
   const middleFolded = distance3D(middleTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
   const ringFolded = distance3D(ringTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
   const pinkyFolded = distance3D(pinkyTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
 
-  // En móvil: solo 1 dedo doblado requerido; Desktop: 2 dedos
+  // Contar dedos doblados
   const foldedCount = [indexFolded, middleFolded, ringFolded, pinkyFolded].filter(Boolean).length;
-  const minFoldedRequired = isMobile ? 1 : 2;
 
-  return thumbExtended && foldedCount >= minFoldedRequired;
+  // En móvil: requerir 3 dedos doblados; Desktop: 2 dedos
+  const minFoldedRequired = isMobile ? 3 : 2;
+
+  return thumbExtended && thumbAboveOthers && foldedCount >= minFoldedRequired;
 }
