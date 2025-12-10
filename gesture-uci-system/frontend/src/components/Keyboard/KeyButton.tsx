@@ -41,7 +41,8 @@ export const KeyButton: React.FC<KeyButtonProps> = ({
   // Tamaño responsive basado en viewport width
   const getResponsiveSize = () => {
     const vw = window.innerWidth;
-    if (vw < 640) return 70;  // móvil
+    if (vw < 380) return 52;  // móvil pequeño (iPhone SE, etc)
+    if (vw < 640) return 58;  // móvil estándar
     if (vw < 768) return 80;  // tablet pequeño
     if (vw < 1024) return 90; // tablet
     if (vw < 1280) return 100; // laptop pequeño (14")
@@ -95,8 +96,8 @@ export const KeyButton: React.FC<KeyButtonProps> = ({
             : isProximate
             ? `0 0 15px ${keyNode.color}40`
             : '0 4px 15px rgba(0,0,0,0.4)',
-          fontSize: size > 100 ? '12px' : '10px',
-          padding: '8px',
+          fontSize: size > 100 ? '12px' : size > 60 ? '10px' : '8px',
+          padding: size > 60 ? '8px' : '4px',
           lineHeight: 1.2
         }}
       >
