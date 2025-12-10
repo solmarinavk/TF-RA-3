@@ -25,15 +25,16 @@ export const PROXIMITY_THRESHOLD = 80; // pixels
 export const HOVER_THRESHOLD = 60; // pixels
 
 // Parámetros de detección de gestos
-// En móvil: más estricto para evitar falsos positivos
+// Desktop: usa detección completa con hombro visible
+// Mobile: usa detección alternativa solo con codo+muñeca, más permisiva
 export const L_POSE_ANGLE_TOLERANCE = 45; // desktop: grados (45-135 grados)
-export const L_POSE_ANGLE_TOLERANCE_MOBILE = 30; // móvil: más estricto (60-120 grados)
+export const L_POSE_ANGLE_TOLERANCE_MOBILE = 35; // móvil: un poco más estricto cuando se ve el hombro
 
 export const L_POSE_DURATION = 2000; // 2 segundos
 export const L_POSE_DURATION_MOBILE = 2000; // móvil: igual que desktop
 
-export const MIN_LANDMARK_VISIBILITY = 0.3; // umbral de visibilidad
-export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.4; // móvil: más estricto para evitar detecciones fantasma
+export const MIN_LANDMARK_VISIBILITY = 0.3; // desktop: umbral de visibilidad
+export const MIN_LANDMARK_VISIBILITY_MOBILE = 0.2; // móvil: más permisivo para cámaras frontales
 
 export const FPS_TARGET = 30;
 
