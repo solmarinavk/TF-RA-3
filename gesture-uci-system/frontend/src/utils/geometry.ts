@@ -1,5 +1,5 @@
 import { PoseLandmark, HandLandmark, PoseLandmarkIndex } from '@/types';
-import { getLPoseAngleTolerance, getMinLandmarkVisibility } from './constants';
+import { getLPoseAngleTolerance, getMinLandmarkVisibility, isMobileDevice } from './constants';
 
 /**
  * Calcula el ángulo entre tres puntos usando producto punto
@@ -385,11 +385,14 @@ export function isHandClosed(handLandmarks: HandLandmark[] | null): boolean {
 /**
  * Detecta gesto de pulgar arriba (👍)
  * Para finalizar grabación - más fácil que puño cerrado
+ * En móvil es más permisivo para facilitar la detección
  * @param handLandmarks - Array de hand landmarks (21 puntos)
  * @returns true si el pulgar está levantado y los demás dedos cerrados
  */
 export function isThumbsUp(handLandmarks: HandLandmark[] | null): boolean {
   if (!handLandmarks || handLandmarks.length < 21) return false;
+
+  const isMobile = isMobileDevice();
 
   const thumbTip = handLandmarks[4];
   const thumbIP = handLandmarks[3];
@@ -399,17 +402,23 @@ export function isThumbsUp(handLandmarks: HandLandmark[] | null): boolean {
   const pinkyTip = handLandmarks[20];
   const indexMCP = handLandmarks[5];
 
-  // 1. El pulgar debe estar extendido hacia arriba (más permisivo)
-  const thumbExtended = thumbTip.y < thumbIP.y;
+  // 1. El pulgar debe estar extendido hacia arriba
+  // En móvil: más permisivo, acepta pulgar ligeramente más bajo
+  const thumbExtended = isMobile
+    ? thumbTip.y < thumbIP.y + 0.05 // Móvil: más tolerante
+    : thumbTip.y < thumbIP.y;
 
   // 2. Los otros dedos deben estar doblados (cerca del MCP del índice)
-  const indexFolded = distance3D(indexTip, indexMCP) < distance3D(thumbTip, indexMCP) * 0.8;
-  const middleFolded = distance3D(middleTip, indexMCP) < distance3D(thumbTip, indexMCP) * 0.8;
-  const ringFolded = distance3D(ringTip, indexMCP) < distance3D(thumbTip, indexMCP) * 0.8;
-  const pinkyFolded = distance3D(pinkyTip, indexMCP) < distance3D(thumbTip, indexMCP) * 0.8;
+  // En móvil: umbral más alto (1.0 vs 0.8) para ser más permisivo
+  const foldThreshold = isMobile ? 1.0 : 0.8;
+  const indexFolded = distance3D(indexTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
+  const middleFolded = distance3D(middleTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
+  const ringFolded = distance3D(ringTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
+  const pinkyFolded = distance3D(pinkyTip, indexMCP) < distance3D(thumbTip, indexMCP) * foldThreshold;
 
-  // Al menos 2 de 4 dedos doblados y pulgar extendido (más permisivo)
+  // En móvil: solo 1 dedo doblado requerido; Desktop: 2 dedos
   const foldedCount = [indexFolded, middleFolded, ringFolded, pinkyFolded].filter(Boolean).length;
+  const minFoldedRequired = isMobile ? 1 : 2;
 
-  return thumbExtended && foldedCount >= 2;
+  return thumbExtended && foldedCount >= minFoldedRequired;
 }
